@@ -1,20 +1,27 @@
-"use client";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
 
-import * as React from "react";
-import { ThemeProvider as NextThemesProvider } from "next-themes";
+const inter = Inter({ subsets: ["latin"] });
 
-export function ThemeProvider({
+export const metadata: Metadata = {
+  title: "Nova Studio",
+  description: "SaaS Foundation",
+};
+
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem={true}
-    >
-      {children}
-    </NextThemesProvider>
+    <html lang="en">
+      <body className={inter.className}>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }
