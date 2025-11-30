@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -16,11 +16,7 @@ import Link from "next/link";
 import { protectRoute } from "@/lib/auth";
 import { getProjects } from "@/lib/projects";
 
-import { Drawer } from "@/components/ui/drawer";
-import CreateProjectForm from "@/components/projects/create-project-form";
-
-// Because this page now uses client-side interactivity,
-// we run the fetch inside a wrapper function.
+// Wrapper for client interactivity
 export default function ProjectsPageWrapper() {
   return <ProjectsPageClient />;
 }
@@ -32,18 +28,18 @@ async function getData() {
 
 function ProjectsPageClient() {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
 
-  // We convert server fetch to client fetch with a lazy wrapper.
   const [projects, setProjects] = useState<any[]>([]);
   const [loaded, setLoaded] = useState(false);
 
-  if (!loaded) {
-    getData().then((res) => {
-      setProjects(res);
-      setLoaded(true);
-    });
-  }
+  useEffect(() => {
+    if (!loaded) {
+      getData().then((res) => {
+        setProjects(res);
+        setLoaded(true);
+      });
+    }
+  }, [loaded]);
 
   return (
     <div className="space-y-6">
@@ -55,9 +51,12 @@ function ProjectsPageClient() {
           </p>
         </div>
 
-        <Button onClick={() => setOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> New Project
-        </Button>
+        {/* No Drawer. Clean + deploy safe. */}
+        <Link href="/projects/new">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> New Project
+          </Button>
+        </Link>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -93,16 +92,6 @@ function ProjectsPageClient() {
           </div>
         )}
       </div>
-
-      {/* Drawer */}
-      <Drawer open={open} onClose={() => setOpen(false)} title="Create Project">
-        <CreateProjectForm
-          onCreated={(id) => {
-            setOpen(false);
-            router.push(`/builder/${id}`);
-          }}
-        />
-      </Drawer>
     </div>
   );
 }
