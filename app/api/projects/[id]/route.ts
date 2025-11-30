@@ -1,21 +1,31 @@
-// app/api/projects/[id]/route.ts
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase-browser";
+import { createClient } from "@/lib/supabase-browser";
 
 export async function PATCH(req: Request, { params }: any) {
-  try {
-    const updates = await req.json();
+  const supabase = createClient();
+  const body = await req.json();
 
-    const { data, error } = await supabase
-      .from("projects")
-      .update({ ...updates, updated_at: new Date() })
-      .eq("id", params.id)
-      .select()
-      .single();
+  const { data, error } = await supabase
+    .from("projects")
+    .update(body)
+    .eq("id", params.id)
+    .select()
+    .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json(data);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  return NextResponse.json(data);
+}
+
+export async function DELETE(req: Request, { params }: any) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("projects")
+    .delete()
+    .eq("id", params.id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  return NextResponse.json({ success: true });
 }

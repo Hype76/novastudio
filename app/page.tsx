@@ -1,12 +1,11 @@
-import { redirect } from "next/navigation";
-import { getUserSession } from "@/lib/auth";
+import { protectRoute } from "@/lib/auth";
 
 export default async function HomePage() {
-  const session = await getUserSession();
+  await protectRoute();
 
-  if (session) {
-    redirect("/dashboard");
-  } else {
-    redirect("/auth/login");
-  }
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Welcome to Nova Studio</h1>
+    </div>
+  );
 }
