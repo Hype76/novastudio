@@ -1,12 +1,34 @@
 // lib/auth.ts
-"use server";
 
-import { cookies } from "next/headers";
+import { supabase } from "@/lib/supabase-browser";
+import { redirect } from "next/navigation";
 
-// Dummy protectRoute for now until we hook Supabase Auth
-// This avoids Netlify crashes and keeps the interface identical.
+// Protect routes that require login
 export async function protectRoute() {
-  // Later we add real authentication.
-  // For now, do nothing.
-  return true;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/auth/login");
+  }
+
+  return user;
+}
+
+// Redirect user away if they're already logged in
+export async function redirectIfAuthenticated() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect("/dashboard");
+  }
+}
+
+// Return user session to client components
+export async function getUserSession() {
+  const session = await supabase.auth.getSession();
+  return session.data.session;
 }
