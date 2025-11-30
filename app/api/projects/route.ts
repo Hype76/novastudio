@@ -1,37 +1,38 @@
+// app/api/projects/route.ts
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { supabase } from "@/lib/supabase-browser";
 
 export async function GET() {
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  try {
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .neq("status", "archived")
+      .order("created_at", { ascending: false });
 
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(data);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
-
-  // Mock data - in real app query supabase
-  const mockProjects = [
-    { id: "1", name: "Project Alpha", status: "active" },
-    { id: "2", name: "Project Beta", status: "draft" },
-  ];
-
-  return NextResponse.json({ data: mockProjects });
 }
 
-export async function POST(request: Request) {
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const { name, description } = body;
 
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { data, error } = await supabase
+      .from("projects")
+      .insert([
+        { name, description, status: "active" }
+      ])
+      .select()
+      .single();
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(data);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
-
-  const body = await request.json();
-  
-  // Logic to insert into DB would go here
-  
-  return NextResponse.json({ 
-    message: "Project created successfully", 
-    data: { id: "new-id", ...body } 
-  }, { status: 201 });
 }

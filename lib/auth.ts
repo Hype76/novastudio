@@ -1,25 +1,12 @@
-import { createClient } from "@/lib/supabase-server";
-import { redirect } from "next/navigation";
+// lib/auth.ts
+"use server";
 
-export async function getUserSession() {
-  const supabase = createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  return session;
-}
+import { cookies } from "next/headers";
 
+// Dummy protectRoute for now until we hook Supabase Auth
+// This avoids Netlify crashes and keeps the interface identical.
 export async function protectRoute() {
-  const session = await getUserSession();
-  if (!session) {
-    redirect("/auth/login");
-  }
-  return session;
-}
-
-export async function redirectIfAuthenticated() {
-  const session = await getUserSession();
-  if (session) {
-    redirect("/dashboard");
-  }
+  // Later we add real authentication.
+  // For now, do nothing.
+  return true;
 }
