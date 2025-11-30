@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, FolderKanban, PlusCircle } from "lucide-react";
+import { LayoutDashboard, FolderKanban, PlusCircle, Moon, Sun } from "lucide-react";
 import { Button } from "./ui/button";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 const sidebarItems = [
   {
@@ -21,6 +23,13 @@ const sidebarItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // useEffect only runs on the client, so now we can safely show the UI
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="pb-12 w-64 border-r min-h-[calc(100vh-4rem)] hidden md:block">
@@ -54,6 +63,20 @@ export function Sidebar() {
               <PlusCircle className="mr-2 h-4 w-4" />
               New Project
             </Button>
+            {mounted && (
+              <Button
+                className="w-full justify-start"
+                variant="outline"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              >
+                {theme === "dark" ? (
+                  <Sun className="mr-2 h-4 w-4" />
+                ) : (
+                  <Moon className="mr-2 h-4 w-4" />
+                )}
+                Toggle Theme
+              </Button>
+            )}
           </div>
         </div>
       </div>
