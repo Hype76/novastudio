@@ -1,0 +1,6 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# This file must be manually copied to your GitHub repo as netlify.toml. 
+# AI Studio cannot safely store it directly in the build process if disallowed.
