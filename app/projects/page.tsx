@@ -1,17 +1,49 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { protectRoute } from "@/lib/auth";
+import { getProjects } from "@/lib/projects";
 
-export default async function ProjectsPage() {
+import { Drawer } from "@/components/ui/drawer";
+import CreateProjectForm from "@/components/projects/create-project-form";
+
+// Because this page now uses client-side interactivity,
+// we run the fetch inside a wrapper function.
+export default function ProjectsPageWrapper() {
+  return <ProjectsPageClient />;
+}
+
+async function getData() {
   await protectRoute();
+  return await getProjects();
+}
 
-  // In a real app, fetch projects from API or DB here
-  const projects = [
-    { id: "1", name: "Alpha Protocol", status: "active", date: "2024-03-10" },
-    { id: "2", name: "Beta Build", status: "draft", date: "2024-03-12" },
-  ];
+function ProjectsPageClient() {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+
+  // We convert server fetch to client fetch with a lazy wrapper.
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  if (!loaded) {
+    getData().then((res) => {
+      setProjects(res);
+      setLoaded(true);
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -22,23 +54,29 @@ export default async function ProjectsPage() {
             Manage your ongoing and archived projects.
           </p>
         </div>
-        <Button>
+
+        <Button onClick={() => setOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> New Project
         </Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {projects.map((project) => (
+        {projects.map((project: any) => (
           <Card key={project.id}>
             <CardHeader>
               <CardTitle>{project.name}</CardTitle>
-              <CardDescription>Created on {project.date}</CardDescription>
+              <CardDescription>
+                Created on{" "}
+                {new Date(project.created_at).toLocaleDateString()}
+              </CardDescription>
             </CardHeader>
+
             <CardContent>
               <div className="flex justify-between items-center">
-                <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80 uppercase">
+                <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase bg-primary text-primary-foreground">
                   {project.status}
                 </span>
+
                 <Link href={`/builder/${project.id}`}>
                   <Button variant="outline" size="sm">
                     Open Builder
@@ -48,14 +86,23 @@ export default async function ProjectsPage() {
             </CardContent>
           </Card>
         ))}
-        
-        {/* Empty State Placeholder if needed */}
-        {projects.length === 0 && (
+
+        {loaded && projects.length === 0 && (
           <div className="col-span-full flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-lg text-muted-foreground">
             <p>No projects found. Create one to get started.</p>
           </div>
         )}
       </div>
+
+      {/* Drawer */}
+      <Drawer open={open} onClose={() => setOpen(false)} title="Create Project">
+        <CreateProjectForm
+          onCreated={(id) => {
+            setOpen(false);
+            router.push(`/builder/${id}`);
+          }}
+        />
+      </Drawer>
     </div>
   );
 }
