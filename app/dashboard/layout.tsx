@@ -1,6 +1,6 @@
 import { getUserSession } from "@/lib/auth";
-import Navbar from "@/components/navbar";
-import Sidebar from "@/components/sidebar";
+import { Navbar } from "@/components/navbar";
+import { Sidebar } from "@/components/sidebar";
 
 export default async function DashboardLayout({
   children,
