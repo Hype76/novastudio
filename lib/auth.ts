@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClientServer } from "./supabase-server";
+import { createClientServer } from "@/app/supabase-server";
 
 // Get the current user session
 export async function getUserSession() {

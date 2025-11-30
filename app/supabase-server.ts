@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
-export function createServerClientWrapper() {
+export function createClientServer() {
   const cookieStore = cookies();
 
   return createServerClient(
@@ -13,15 +13,20 @@ export function createServerClientWrapper() {
           return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set(name, value, options);
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch {
+            /* ignore errors */
+          }
         },
         remove(name: string, options: CookieOptions) {
-          cookieStore.set(name, "", {
-            ...options,
-            maxAge: 0
-          });
-        }
-      }
+          try {
+            cookieStore.set({ name, value: "", ...options });
+          } catch {
+            /* ignore errors */
+          }
+        },
+      },
     }
   );
 }
