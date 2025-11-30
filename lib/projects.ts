@@ -1,47 +1,37 @@
-import { supabase } from "@/lib/supabase-browser";
+// lib/projects.ts
 
 export async function getProjects() {
-  const { data, error } = await supabase
-    .from("projects")
-    .select("*")
-    .neq("status", "archived")
-    .order("created_at", { ascending: false });
-
-  if (error) throw error;
-  return data;
+  const res = await fetch("/api/projects", { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch projects");
+  return res.json();
 }
 
 export async function createProject(name: string, description?: string) {
-  const { data, error } = await supabase
-    .from("projects")
-    .insert([{ name, description, status: "active" }])
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  const res = await fetch("/api/projects", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, description })
+  });
+  if (!res.ok) throw new Error("Failed to create project");
+  return res.json();
 }
 
 export async function updateProject(id: string, updates: any) {
-  const { data, error } = await supabase
-    .from("projects")
-    .update({ ...updates, updated_at: new Date() })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  const res = await fetch(`/api/projects/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates)
+  });
+  if (!res.ok) throw new Error("Failed to update project");
+  return res.json();
 }
 
 export async function archiveProject(id: string) {
-  const { data, error } = await supabase
-    .from("projects")
-    .update({ status: "archived", updated_at: new Date() })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  const res = await fetch(`/api/projects/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "archived" })
+  });
+  if (!res.ok) throw new Error("Failed to archive project");
+  return res.json();
 }
